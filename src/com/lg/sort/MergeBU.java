@@ -1,0 +1,63 @@
+package com.lg.sort;
+
+/**
+ * Created by lg on 2017/11/16.
+ */
+public class MergeBU {
+    private static Comparable[] aux;//归并所需的辅助数组
+
+    public static void sort(Comparable[] a) {
+        int N = a.length;
+        aux = new Comparable[N];
+        for (int sz = 1; sz < N ; sz = sz + sz) //按1，2，4，8，归并
+            for (int lo = 0; lo < N - sz; lo += sz + sz)
+                merge(a, lo, lo + sz - 1, Math.min(lo + sz + sz - 1, N - 1));
+    }
+
+
+    public static void merge(Comparable[] a, int lo, int mid, int hi) {
+        //归并a[lo..mid],a[mid+1..hi]
+        int i = lo, j = mid + 1;
+        for (int k = lo; k <= hi; k++)
+            aux[k] = a[k];   //a拷贝到aux
+
+        for (int k = lo; k <= hi; k++)
+            if (i > mid) a[k] = aux[j++];
+            else if (j > hi) a[k] = aux[i++];
+            else if (less(aux[i], aux[j])) a[k] = aux[i++];
+            else a[k] = aux[j++];
+    }
+
+    private static boolean less(Comparable a, Comparable b) {
+        return a.compareTo(b) < 0;
+    }
+
+    private static void exch(Comparable[] a, int i, int j) {
+        Comparable t = a[i];
+        a[i] = a[j];
+        a[j] = t;
+    }
+
+    private static void show(Comparable[] a) {
+        for (int i = 0; i < a.length; i++) {
+            System.out.println(a[i]);
+        }
+        System.out.println();
+    }
+
+    private static boolean isSorted(Comparable[] a) {
+        for (int i = 1; i < a.length; i++) {
+            if (less(a[i], a[i - 1]))
+                return false;
+        }
+        return true;
+    }
+
+    public static void main(String[] args) {
+        String[] a = {"a", "g", "e", "z", "d"};
+        sort(a);
+        assert isSorted(a);
+        show(a);
+    }
+
+}
