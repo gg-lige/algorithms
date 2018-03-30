@@ -699,32 +699,33 @@ public class Offer {
 
     //26.打印字符串的所有排列
     public ArrayList<String> Permutation(String str) {
-        List<String> res = new ArrayList<>();
-        if (str != null && str.length() > 0) {
-            PermutationHelper(str.toCharArray(), 0, res);
-            Collections.sort(res);
-        }
-        return (ArrayList) res;
-    }
+        ArrayList<String> result = new ArrayList<String>();
+        if(str == null || str.length()==0)
+            return result;
 
-    public void PermutationHelper(char[] cs, int i, List<String> list) {
-        if (i == cs.length - 1) {
-            String val = String.valueOf(cs);
-            if (!list.contains(val))
-                list.add(val);
-        } else {
-            for (int j = i; j < cs.length; j++) {
-                swap(cs, i, j);
-                PermutationHelper(cs, i + 1, list);
-                swap(cs, i, j);
+        int start =0;
+        reArrange(str.toCharArray(),start,result);
+        Collections.sort(result);
+        return (ArrayList)result;
+    }
+    public void reArrange(char[] str, int start, List<String> result){
+        if(start == str.length -1){
+            String s = String.valueOf(str);//String的静态方法，得到具体的值
+            if(!result.contains(s))
+                result.add(s);
+        }
+        else{
+            for(int i = start; i< str.length; i++){
+                swap(str, start, i);
+                reArrange(str,start+1,result);
+                swap(str, start, i);
             }
         }
     }
-
-    public void swap(char[] cs, int i, int j) {
-        char temp = cs[i];
-        cs[i] = cs[j];
-        cs[j] = temp;
+    public void swap(char[] s,int i, int j){
+        char temp = s[i];
+        s[i]=s[j];
+        s[j]= temp;
     }
 
     //27.数组中出现次数超过一半的数字
@@ -757,6 +758,59 @@ public class Offer {
             return result;
 
     }
+    // 法 2  每次约减不同的两个数、最后剩下的一个
+    public int MoreThanHalfNum_Solution2(int [] array) {
+        int length = array.length;
+        if(array == null || length == 0)
+            return 0;
+        int lo = 0;
+        int hi = length-1;
+        int middle = length >>1;
+        if(lo >= hi)
+            return array[0];
+        int j = partition(array ,lo, hi);
+        while(j != middle){
+            if(middle < j){  //中位数在j的左边
+                hi = j - 1;
+                j = partition(array, lo, hi);
+            }else{
+                lo = j+1;
+                j = partition(array, lo, hi);
+            }
+        }
+        int result = array[middle];
+        int times =0; //判断最大times是否超过数组长的一半
+        for(int i =0; i< length ;++i){
+            if(array[i] == result)
+                times++;
+        }
+        if(times*2 <= length){
+            System.out.println("0");
+            return 0;
+        }else
+            return result;
+
+    }
+
+    public int partition(int[] a, int lo, int hi) {
+        int i=lo,j=hi+1;
+        int v=a[lo];
+        while (true){
+            while(a[++i]<v) if(i==hi) break;
+            while(v<a[--j]) if(j==lo) break;
+            if(i>=j) break;
+            exch(a,i,j);
+        }
+        exch(a,lo,j);
+        return j;
+    }
+
+    public void exch(int[] a, int i, int j) {
+        int t = a[i];
+        a[i] = a[j];
+        a[j] = t;
+    }
+
 
     //28. 最小的K个数
     public ArrayList<Integer> GetLeastNumbers_Solution(int[] input, int k) {
@@ -1064,6 +1118,142 @@ public class Offer {
 
     }
 
+    //39.数组中只出现一次的数字（找出这两个只出现一次的数字）
+    public void FindNumsAppearOnce(int[] array, int num1[], int num2[]) {
+        int length = array.length;
+        if (array == null || length < 2)
+            return;
+
+        int resultExclusiveOr = 0;
+        for (int i = 0; i < length; ++i) {
+            resultExclusiveOr ^= array[i]; //所有元素逐个做异或操作
+        }
+
+        int indexOf1 = FindFirstBitIs1(resultExclusiveOr); //找到做完异或操作的1的下标的位置
+
+        for (int j = 0; j < length; j++) {
+            if (IsBit1(array[j], indexOf1))  //将数组分为两部分，一部分为下标为1的，一部分为下标为0的
+                num1[0] ^= array[j];
+            else
+                num2[0] ^= array[j];
+        }
+    }
+
+    private int FindFirstBitIs1(int num) {
+        int indexBit = 0;
+        while ((num & 1) == 0 && indexBit < 8 * 4) {//找第一个1的下标,注意java 中没有sizeof
+            num = num >> 1; //找到num最右边时1的位置
+            indexBit++;
+        }
+        return indexBit;
+    }
+
+
+    boolean IsBit1(int num, int index) {
+        num = num >> index;
+        return (num & 1) == 1;
+    }
+
+    //40.递增序列中和为S的两个数字
+    public ArrayList<Integer> FindNumbersWithSum(int[] array, int sum) {
+        ArrayList<Integer> list = new ArrayList<>();
+        int length = array.length;
+        if (length < 1 || array == null)
+            return list;
+
+        int small = 0; //较小数字的下标
+        int large = length - 1; //较大数字的下标
+        while (small < large) {
+            int cursum = array[small] + array[large];
+            if (cursum == sum) {
+                list.add(array[small]);
+                list.add(array[large]);
+                break;
+            } else if (cursum > sum) {
+                large--;
+            } else
+                small++;
+        }
+        return list;
+    }
+
+    //41. 和为S的连续正数序列  多组
+    public ArrayList<ArrayList<Integer>> FindContinuousSequence(int sum) {
+        ArrayList<ArrayList<Integer>> lists = new ArrayList<ArrayList<Integer>>();
+        if (sum < 3)
+            return lists; //和<3即为2时，没有递增序列
+
+        int small = 1;
+        int big = 2;
+        int middle = (1 + sum) / 2;
+
+        while (small < middle) {  //当small==(1+sum)/2的时候停止
+            int cursum = sumOfList(small, big);
+            if (cursum == sum) {  //
+                ArrayList<Integer> l = new ArrayList<Integer>();
+                for (int i = small; i <= big; i++)
+                    l.add(i);
+                lists.add(l);
+                small++; //因为有多组满足的条件
+                big++;
+            } else if (cursum < sum) { //small到big序列和小于sum，big++;
+                big++;
+            } else  //大于sum，small++;
+                small++;
+        }
+        return lists;
+    }
+
+    int sumOfList(int s, int e) { //计算当前序列的和
+        int sum = s;
+        for (int i = s + 1; i <= e; i++)
+            sum += i;
+        return sum;
+    }
+
+    //42. 反转单词顺序列
+    public String ReverseSentence(String str) {
+        if (str.trim().equals("")) //去掉字符串首尾的空格
+            return str;
+
+        String[] s = str.split(" ");
+        StringBuilder sb = new StringBuilder();
+        for (int i = s.length; i > 0; i--) {
+            sb.append(s[i - 1]);
+            if (i > 1)
+                sb.append(" ");//在每个单词之间加一个空格
+        }
+        return sb.toString();
+    }
+
+    //43.左旋转字符串（按几个字符）
+    public String LeftRotateString(String str, int n) {
+        char[] chars = str.toCharArray();
+        int length = chars.length;
+        if (length > 0 && n > 0 && n < length) {
+            reverse(chars, 0, n - 1); //翻前n个字符
+            reverse(chars, n, length - 1); // 翻后面length-n个字符
+            reverse(chars, 0, length - 1);  //翻整个字符
+
+            StringBuilder sb = new StringBuilder();
+            for (char c : chars)
+                sb.append(c);
+            return sb.toString();
+        }
+        return str;
+    }
+
+    public void reverse(char[] chars, int s, int e) {
+        char temp;
+        while (s < e) {
+            temp = chars[s];
+            chars[s] = chars[e];
+            chars[e] = temp;
+            s++;
+            e--;
+        }
+    }
+
     //44. 扑克牌顺子
     public boolean isContinuous(int[] numbers) {
         int numberOfZero = 0; //大小王
@@ -1109,6 +1299,173 @@ public class Offer {
             index--;
         }
         return data.get(0);
+    }
+
+    //49.把字符串转换成整数（注意考虑正负、越界、非数字）
+    public int StrToInt(String str) {
+        if (str == null || str.length() == 0)
+            return 0;
+        char[] c = str.toCharArray();
+        boolean minus = false;
+        int num = 0;
+        int i = 0;
+        //数组溢出：下标大于数组长度！比如c.length ==1,当有c[1]出现时则数组溢出
+        if (c[i] == '+')
+            ++i;
+        else if (c[i] == '-') {
+            ++i;
+            minus = true;
+        }
+        if (i < c.length)
+            num = StrToIntCore(c, minus, i);//i表示第一个数字的下标
+        return num;
+    }
+
+    public int StrToIntCore(char[] str, boolean minus, int i) {
+        int num = 0;
+        for (int j = i; j < str.length; j++) {
+            if (str[j] >= '0' && str[j] <= '9') {
+                int flag = minus ? -1 : 1;  //定义正负
+                num = num * 10 + flag * (str[j] - '0');
+                if ((!minus && num > Integer.MAX_VALUE) || (minus && num < Integer.MIN_VALUE))//处理越界
+                {
+                    num = 0;
+                    break;
+                }
+            } else {
+                num = 0;
+                break;
+            }
+        }
+        return num;
+    }
+
+    //51. 数组中重复的数字
+    public boolean duplicate(int numbers[],int length,int [] duplication) {
+        if(numbers == null || length <1)
+            return false;
+        for(int i =0; i < length; i++)
+            if(numbers[i]<0 || numbers[i]> length -1) //题目要求
+                return false;
+
+        for(int i =0; i< length; i++){
+            while(numbers[i]!=i){
+                //判是否有重复
+                if(numbers[i]== numbers[numbers[i]]){
+                    duplication[0]= numbers[i]; //返回重复的数字
+                    return true;
+                }
+                //不等于时要交换
+                int temp = numbers[i];
+                numbers[i] = numbers[temp];
+                numbers[temp] = temp;
+            }
+        }
+        return false;
+    }
+    //52.构建乘积数组 B[i]=A[0..i-1]*A[i+1..n-1]
+    public int[] multiply(int[] A) {
+        int length =A.length;
+        int[] B = new int[length];
+        if(length != 0){
+            //下三角连乘
+            B[0] = 1;
+            for(int i =1; i< length; i++)
+                B[i] = B[i-1] * A[i-1];
+            //上三角连乘
+            int temp = 1;
+            for(int j = length - 2; j >= 0; j--){
+                temp= temp* A[j+1];
+                B[j] = temp * B[j];
+            }
+        }
+        return B;
+    }
+
+    //53.正则表达时的匹配
+    public boolean match(char[] str, char[] pattern) {
+        if (str == null || pattern == null)
+            return false;
+
+        int strIndex = 0;
+        int patternIndex = 0;
+        return matchCore(str, strIndex, pattern, patternIndex);
+    }
+
+    public boolean matchCore(char[] str, int strIndex, char[] pattern, int patternIndex) {
+        if (strIndex == str.length && patternIndex == pattern.length)
+            return true;//有效性检验：str到尾，pattern到尾，匹配成功
+        if (strIndex != str.length && patternIndex == pattern.length)
+            return false;//pattern先到尾，匹配失败
+        //模式第2个是*，且字符串第1个跟模式第1个匹配,分3种匹配模式；如不匹配，模式后移2位
+        if (patternIndex + 1 < pattern.length && pattern[patternIndex + 1] == '*') {
+            if ((strIndex != str.length && pattern[patternIndex] == str[strIndex]) ||
+                    pattern[patternIndex] == '.' && strIndex != str.length) {
+                return matchCore(str, strIndex, pattern, patternIndex + 2) //模式后移2，视为x*匹配0个字符
+                        || matchCore(str, strIndex + 1, pattern, patternIndex + 2)//视为模式匹配1个字符
+                        || matchCore(str, strIndex + 1, pattern, patternIndex); //*匹配1个，再匹配str中的下一个
+            } else {
+                return matchCore(str, strIndex, pattern, patternIndex + 2);
+            }
+        }
+        //模式第2个不是*，且字符串第1个跟模式第1个匹配，则都后移1位，否则直接返回false
+        if ((strIndex != str.length && pattern[patternIndex] == str[strIndex]) || (pattern[patternIndex] == '.' && strIndex != str.length)) {
+            return matchCore(str, strIndex + 1, pattern, patternIndex + 1);
+        }
+        return false;
+
+    }
+    //52. 表示数值的字符串
+    private int indexTemp =0;
+    public boolean isNumeric(char[] str) {
+        if(str == null)
+            return false;
+        boolean flag = scanInteger(str);
+        if(indexTemp < str.length && str[indexTemp] == '.'){
+            indexTemp++;
+            flag = scanUnsignedInteger(str)||flag;
+        }
+
+        if(indexTemp < str.length && (str[indexTemp] == 'E' || str[indexTemp] == 'e')){
+            indexTemp++;
+            flag = flag && scanInteger(str);
+        }
+        return flag && indexTemp == str.length;
+    }
+
+    public boolean scanInteger(char[] str){
+        if(indexTemp < str.length && (str[indexTemp] == '+'|| str[indexTemp] == '-'))
+            indexTemp++;
+        return scanUnsignedInteger(str);
+    }
+    public boolean scanUnsignedInteger(char[] str){
+        int start = indexTemp;
+        while(indexTemp < str.length && str[indexTemp] >= '0' && str[indexTemp] <= '9')
+            indexTemp++;
+        return start < indexTemp; //是否存在整数
+    }
+
+    //55. 字符流中第一个不重复的字符
+    int[] hashtable = new int[256];
+    StringBuffer sb = new StringBuffer();
+    public void Insert(char ch)
+    {
+        sb.append(ch);
+        if( hashtable[ch] == 0 )
+            hashtable[ch]=1;
+        else
+            hashtable[ch]+=1;
+
+    }
+
+    public char FirstAppearingOnce()
+    {
+        char[] str = sb.toString().toCharArray();
+        for(char c: str){
+            if(hashtable[c]==1)
+                return c;
+        }
+        return '#';
     }
 
     // 57. 删除链表中重复的结点
