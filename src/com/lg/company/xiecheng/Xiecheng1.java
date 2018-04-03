@@ -48,8 +48,8 @@ public class Xiecheng1 {
 
         }
         int result =0;
-        for()
-
+    //    for()
+        return  result;
     }
 
 }

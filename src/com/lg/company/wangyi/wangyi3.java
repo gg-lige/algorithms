@@ -26,12 +26,12 @@ public class wangyi3 {
                             bestvalues[i][j] = bestvalues[i - 1][j];
                         } else {
                             int weight = v[i - 1];
-                            int value = n[i - 1];
+                       //     int value = n[i - 1];
                         }
                     }
                 }
             }
-            bestvalues = bestvalues[n][];
+     //       bestvalues = bestvalues[n][];
         }
     }
 
