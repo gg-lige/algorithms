@@ -18,23 +18,29 @@ public class Offer {
         return 0;
     }
 
-    // 最长不重复子串
-    public int findUniqueLongestSubstring(String s) {
-        int n = s.length();
-        Set<Character> set = new HashSet<>();
-        int ans = 0, i = 0, j = 0;
-        while (i < n && j < n) {
-            if (!set.contains(s.charAt(j))) {
-                set.add(s.charAt(j++));
-                ans = Math.max(ans, j - i);
-            } else {
-                set.remove(s.charAt(i++));
+    //最长不含重复字符的子字符串的长度
+    public static int longestSubstringWithDuplication(String s) {
+        int curLength = 0;
+        int maxLength = 0;
+        char[] str = s.toCharArray();
+        int[] position = new int[26];
+        for (int i = 0; i < str.length; i++) {
+            int prevIndex = position[str[i] - 'a'];
+            if (prevIndex < 0 || i - prevIndex > curLength)
+                curLength++;
+            else {
+                if (curLength > maxLength)
+                    maxLength = curLength;
+                curLength = i - prevIndex;
             }
+            position[str[i] - 'a'] = i;
         }
-        return ans;
+        if (curLength > maxLength)
+            maxLength = curLength;
+        return maxLength;
     }
 
-    // 最长公共字串
+    // 两字符串的最长公共字串
     public int findLongestSubstring(String str1, String str2) {
         int len1 = str1.length();
         int len2 = str2.length();
@@ -1926,4 +1932,156 @@ public class Offer {
         }
         return sum;
     }
+
+    //68.减绳子(法一：动态规划)
+    public static int maxProductAfterCutting(int length) {
+        if (length < 2)
+            return 0;
+        if (length == 2)
+            return 1;
+        if (length == 3)
+            return 2;
+
+        int[] products = new int[length + 1];
+        products[0] = 0;
+        products[1] = 1;
+        products[2] = 2;
+        products[3] = 3; //?
+        int max = 0;
+        for (int i = 4; i <= length; i++) {
+            max = 0;
+            for (int j = 1; j <= i / 2; ++j) {
+                int proTemp = products[j] * products[i - j];
+                if (max < proTemp)
+                    max = proTemp;
+                products[i] = max;
+            }
+        }
+        max = products[length];
+        return max;
+    }
+
+    //(法二：贪心算法)
+    public static int maxProductAfterCutting2(int length) {
+        if (length < 2)
+            return 0;
+        if (length == 2)
+            return 1;
+        if (length == 3)
+            return 2;
+        int timesOf3 = length / 3; //尽可能多减长度为3的绳子段
+        if (length - timesOf3 * 3 == 1) //当长度为4时，2*2》1*3
+            timesOf3 -= 1;
+
+        int timesOf2 = (length - timesOf3 * 3) / 2;
+        return (int) Math.pow(3, timesOf3) * (int) Math.pow(2, timesOf2);
+    }
+
+    //69. 数字序列中某一位的数字
+    public static int digitAtIndex(int index) {
+        if (index < 0)
+            return -1;
+
+        int digits = 1;
+        while (true) {
+            int number = countOfInteger(digits);
+            if (index < number * digits)
+                return digitAtIndex(index, digits);
+
+            index -= digits * number;
+            digits++;
+        }
+    }
+
+    private static int digitAtIndex(int index, int digits) {
+        int number = beginNumber(digits) + index / digits;
+        int indexFromRight = digits - index % digits;
+        for (int i = 1; i < indexFromRight; i++) {
+            number /= 10;
+        }
+        return number % 10;
+    }
+
+    private static int beginNumber(int digits) {
+        if (digits == 1)
+            return 0;
+        return (int) Math.pow(10, digits - 1);
+    }
+
+    private static int countOfInteger(int digits) { //m位的数字共有几个
+        if (digits == 1)
+            return 10;
+        int count = (int) Math.pow(10, digits - 1);
+        return 9 * count;
+    }
+
+    //70.把数字翻译成字符串0->a,1->b
+    public static int getTranslationCount(int number) {
+        if (number < 0)
+            return 0;
+
+        String str = Integer.toString(number);
+        int length = str.length();
+        int[] counts = new int[length];
+        int count = 0; //从左到右翻译
+        for (int i = length - 1; i >= 0; --i) {
+            count = 0;
+            if (i < length - 1)
+                count = counts[i + 1];
+            else
+                count = 1;
+            if (i < length - 1) {
+                int digit1 = str.charAt(i) - '0';
+                int digit2 = str.charAt(i + 1) - '0';
+                int converted = digit1 * 10 + digit2;
+                if (converted >= 10 && converted <= 25) {
+                    if (i < length - 2)
+                        count += counts[i + 2];
+                    else
+                        count += 1;
+                }
+            }
+            counts[i] = count;
+        }
+        count = counts[0];
+        return count;
+    }
+
+    //71. 礼物的最大价值（右移和下移）
+    public static int getMaxValue(int[] values, int rows, int cols) {
+        if (values == null || rows <= 0 || cols <= 0)
+            return 0;
+        int[] maxValues = new int[cols];
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                int left = 0;
+                int up = 0;
+                if (i > 0) up = maxValues[j];
+                if (j > 0) left = maxValues[j - 1];
+
+                maxValues[j] = Math.max(left, up) + values[i * cols + j];
+            }
+        }
+        int maxValue = maxValues[cols - 1];
+        return maxValue;
+    }
+
+    //72.股票的最大利润
+    public static int maxDiff(int[] numbers, int length) {
+        if (numbers == null || length < 2)
+            return 0;
+        int min = numbers[0]; //数组前n-1个数字的最小值
+        int maxDiff = numbers[1] - min;//卖出价固定时，买入价越低，收益越大
+        for (int i = 2; i < length; i++) {
+            if (numbers[i - 1] < min)
+                min = numbers[i - 1];
+
+            int currentDiff = numbers[i] - min;
+            if (currentDiff > maxDiff)
+                maxDiff = currentDiff;
+        }
+        return maxDiff;
+    }
+
+
 }

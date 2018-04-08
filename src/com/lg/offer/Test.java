@@ -1,5 +1,7 @@
 package com.lg.offer;
 
+import com.lg.sort.MaxPQ;
+
 import java.util.*;
 
 /**
@@ -7,10 +9,38 @@ import java.util.*;
  */
 public class Test {
     public static void main(String[] args) {
-        char[] matrix = {'a', 'b', 'c', 'e', 's', 'f', 'c', 's'};
-        char[] a = {'b', 'c', 'c', 's'};
-        hasPath(matrix, 2, 4, a);
+//        char[] matrix = {'a', 'b', 'c', 'e', 's', 'f', 'c', 's'};
+//        char[] a = {'b', 'c', 'c', 's'};
+//        hasPath(matrix, 2, 4, a);
+        int[] value={
+                9,11,8,5,7,12,16,14
+        };
+        System.out.println(value);
+
     }
+
+
+    public static  int longestSubstringWithDuplication(String s) {
+        int curLength =0;
+        int maxLength =0;
+        char[] str = s.toCharArray();
+        int[] position = new int[26];
+        for (int i = 0; i < str.length; i++) {
+            int prevIndex = position[str[i]-'a'];
+            if(prevIndex <0 || i - prevIndex > curLength)
+                curLength++;
+            else {
+                if(curLength>maxLength)
+                    maxLength = curLength;
+                curLength=i -prevIndex;
+            }
+            position[str[i]-'a']=i;
+        }
+        if(curLength>maxLength)
+            maxLength= curLength;
+        return maxLength;
+    }
+ //   public static int longestSubstringWith
 
     //之字形打印
     public ArrayList<ArrayList<Integer>> Print3(TreeNode pRoot) {
